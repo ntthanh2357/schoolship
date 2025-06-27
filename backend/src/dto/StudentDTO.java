@@ -1,13 +1,13 @@
 package dto;
 
-public class UserDTO {
+public class StudentDTO {
     private String id;
     private String email;
     private String name;
 
-    public UserDTO() {}
+    public StudentDTO() {}
 
-    public UserDTO(String id, String email, String name) {
+    public StudentDTO(String id, String email, String name) {
         this.id = id;
         this.email = email;
         this.name = name;
