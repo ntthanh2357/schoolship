@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { AdminLayout, Overview, UserManagement, UserDetail, ScholarshipManagement, ScholarshipDetail as AdminScholarshipDetail, Settings } from './components/admin';
 
 // Layout Components
 import Header from './components/Layout/Header';
@@ -8,6 +9,7 @@ import Footer from './components/Layout/Footer';
 
 // Pages
 import Home from './pages/Home';
+import CreateScholarship from './pages/CreateScholarship';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Scholarships from './pages/Scholarships';
@@ -19,7 +21,6 @@ import OrderHistory from './pages/OrderHistory';
 import AdvisorProfileSetup from './pages/AdvisorProfileSetup';
 import StudentDashboard from './pages/StudentDashboard';
 import AdvisorDashboard from './pages/AdvisorDashboard';
-import AdminDashboard from './pages/AdminDashboard';
 import AdvisorScholarships from './pages/AdvisorScholarships';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
@@ -45,9 +46,18 @@ function App() {
               <Route path="/orders" element={<OrderHistory />} />
               <Route path="/dashboard" element={<StudentDashboard />} />
               <Route path="/advisor-dashboard" element={<AdvisorDashboard />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Overview />} />
+                <Route path="overview" element={<Overview />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="users/:id" element={<UserDetail />} />
+                <Route path="scholarships" element={<ScholarshipManagement />} />
+                <Route path="scholarships/:id" element={<AdminScholarshipDetail />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
               <Route path="/advisor-scholarships" element={<AdvisorScholarships />} />
               <Route path="/advisor-profile-setup" element={<AdvisorProfileSetup />} />
+              <Route path="/create-scholarship" element={<CreateScholarship />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/library" element={<Library />} />
