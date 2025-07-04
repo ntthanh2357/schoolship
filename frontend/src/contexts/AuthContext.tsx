@@ -154,63 +154,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async (credential: string, role: 'student' | 'advisor') => {
     setLoading(true);
     try {
-      const googleUser = decodeGoogleCredential(credential);
-      
-      if (!googleUser) {
-        throw new Error('Invalid Google credential');
+      // Gửi credential (id_token) lên backend để xác thực và nhận JWT
+      const response = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: credential })
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Google login failed');
       }
-
-      console.log('Google login for:', googleUser.email, 'as', role);
-
-      // Check if user exists in our system
-      const existingUser = mockUsers.find(u => u.email === googleUser.email && u.role === role);
-      
-      if (existingUser) {
-        // Update avatar if from Google
-        if (googleUser.picture && googleUser.picture !== existingUser.avatar) {
-          existingUser.avatar = googleUser.picture;
-        }
-        setUser(existingUser);
-        localStorage.setItem('user', JSON.stringify(existingUser));
-      } else {
-        // Create new user with Google data
-        const newUser: User = {
-          id: Date.now().toString(),
-          email: googleUser.email,
-          name: googleUser.name,
-          role: role,
-          avatar: googleUser.picture,
-          emailVerified: true, // Google accounts are pre-verified
-          createdAt: new Date(),
-          ...(role === 'student' && {
-            targetCountry: '',
-            fieldOfStudy: '',
-            academicLevel: '',
-            bio: '',
-          }),
-          ...(role === 'advisor' && {
-            specializations: [],
-            countries: [],
-            languages: ['English'],
-            experience: '',
-            education: '',
-            rating: 0,
-            reviewCount: 0,
-            hourlyRate: 80,
-            availability: true,
-            bio: '',
-            packages: [],
-            verified: false,
-            totalStudents: 0,
-            successRate: 0,
-          }),
-        };
-
-        mockUsers.push(newUser);
-        setUser(newUser);
-        localStorage.setItem('user', JSON.stringify(newUser));
-      }
+      const data = await response.json();
+      const jwt = data.token;
+      // Giải mã JWT để lấy thông tin user
+      const payload = JSON.parse(atob(jwt.split('.')[1]));
+      const userFromJwt = {
+        id: payload.userId,
+        email: payload.sub || payload.email,
+        name: payload.name,
+        role: payload.role || role,
+        avatar: payload.picture,
+        emailVerified: true,
+        createdAt: new Date(),
+      };
+      setUser(userFromJwt);
+      localStorage.setItem('user', JSON.stringify(userFromJwt));
+      localStorage.setItem('token', jwt);
     } catch (error: any) {
+      alert(error.message);
       throw new Error(error.message || 'Google login failed');
     } finally {
       setLoading(false);
